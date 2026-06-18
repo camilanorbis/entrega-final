@@ -4,7 +4,8 @@ import validator from "validator"
 const adoptionSchema = new Schema({
     document: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     completeName: {
         type: String,
