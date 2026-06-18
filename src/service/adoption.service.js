@@ -1,6 +1,6 @@
 import { logger } from '../utils/logger.js'
 
-export default class AdoptioService {
+export default class AdoptionService {
 
     constructor (adoptionDao) {
         this.adoptionDao = adoptionDao
@@ -19,14 +19,7 @@ export default class AdoptioService {
     }
 
     async getAdoptions () {
-        const result = await this.adoptionDao.getAdoptions()
-        if (!result){
-            const error = new Error('Unable to return adoptions')
-            error.statusCode = 400
-            throw error
-        }
-        
-        return result
+        return await this.adoptionDao.getAdoptions()        
     }
 
     async getAdoptionByFilter (filter) {
@@ -42,11 +35,6 @@ export default class AdoptioService {
 
     async modifyAdoption (id, adoption) {
         const originalAdoption = await this.getAdoptionByFilter({ _id: id })
-        if (!originalAdoption){
-            const error = new Error('Adoption does not exist')
-            error.statusCode = 404
-            throw error
-        }
 
         if (adoption.id || adoption._id){
             const error = new Error('Is not allowed to modify adoption id')
@@ -60,31 +48,13 @@ export default class AdoptioService {
             throw error
         }
         
-        const result = await this.adoptionDao.modifyAdoption(id, { $set: adoption })
-        if (!result || result.modifiedCount === 0){
-            const error = new Error('Error updating adoption')
-            error.statusCode = 400
-            throw error
-        }
-        
+        const result = await this.adoptionDao.modifyAdoption(id, { $set: adoption })       
         return result
     }
 
     async deleteAdoption (id) {
         const adoption = await this.getAdoptionByFilter({ _id: id })
-        if (!adoption){
-            const error = new Error('Adoption does not exist')
-            error.statusCode = 404
-            throw error
-        }
-
         const result = await this.adoptionDao.deleteAdoption(id)
-        if (!result || result.deletedCount === 0){
-            const error = new Error('Error deleting adoption')
-            error.statusCode = 400
-            throw error
-        }
-
         return result
     }
 

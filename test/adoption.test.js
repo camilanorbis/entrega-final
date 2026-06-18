@@ -4,6 +4,9 @@ import app from '../src/app.js'
 import AdoptionModel from '../src/model/adoption.model.js'
 import { connectDB } from '../src/config/db.js'
 import { config } from '../src/config/config.js'
+import AdoptionDAO from '../src/dao/AdoptionDAO.js'
+import { jest } from '@jest/globals'
+import AdoptionService from '../src/service/adoption.service.js'
 
 beforeAll (async () => {
     const dbUrl = config.MONGO_URL
@@ -82,6 +85,10 @@ afterAll (async () => {
     await mongoose.connection.close()
 })
 
+afterEach (async () => {
+    jest.restoreAllMocks()
+})
+
 describe('/api/adoption', () => {
 
     describe('GET / -> List all adoption registries', () => {
@@ -93,6 +100,15 @@ describe('/api/adoption', () => {
             expect(response.body.status).toBe('success')
             expect(Array.isArray(response.body.payload)).toBe(true)
             expect(response.body.payload.length).toBe(5)
+        })
+
+        test('Should return 500 when database fails', async () => {
+            jest.spyOn(AdoptionDAO.prototype, 'getAdoptions').mockRejectedValue(new Error('Database connection failed'))
+            const response = await request(app).get('/api/adoption')
+            
+            expect(response.statusCode).toBe(500)
+            expect(response.body.status).toBe('error')
+            expect(response.body.message).toBe('Database connection failed')
         })
 
     })
@@ -117,6 +133,16 @@ describe('/api/adoption', () => {
             expect(response.statusCode).toBe(404)
             expect(response.body.status).toBe('error')
             expect(response.body.message).toBe('Adoption does not exist')
+        })
+
+        test('Should return 500 when database fails', async () => {
+            jest.spyOn(AdoptionDAO.prototype, 'getAdoptionByFilter').mockRejectedValue(new Error('Database connection failed'))
+            const adoption = await AdoptionModel.findOne({ document: 'DOC1122' }).lean()
+            const response = await request(app).get(`/api/adoption/${adoption._id}`)
+            
+            expect(response.statusCode).toBe(500)
+            expect(response.body.status).toBe('error')
+            expect(response.body.message).toBe('Database connection failed')
         })
 
     })
@@ -160,6 +186,26 @@ describe('/api/adoption', () => {
             expect(response.body.message).toBe('Missing or invalid fields')
         })
 
+        test('Should return 500 when database fails', async () => {
+            jest.spyOn(AdoptionDAO.prototype, 'createAdoption').mockRejectedValue(new Error('Database connection failed'))
+            const newAdoption = {
+                document: "DOC1852",
+                completeName: "Mariana Silvera",
+                address: "Rambla Costanera 1286",
+                email: "mariana.silvera@gmail.com",
+                age: 42,
+                petType: "dog",
+                petPatent: "DOG701",
+                petName: "Goni",
+                petAge: 1
+            }
+            const response = await request(app).post('/api/adoption').send(newAdoption)
+            
+            expect(response.statusCode).toBe(500)
+            expect(response.body.status).toBe('error')
+            expect(response.body.message).toBe('Database connection failed')
+        })
+
     })
 
     describe('PUT /:id -> Update an existing adoption registry', () => {
@@ -190,7 +236,7 @@ describe('/api/adoption', () => {
             expect(response.body.message).toBe('Adoption does not exist')
         })
 
-        test('Should return 400 error', async () => {
+        test('Should return 400 error - trying to update adoptions date', async () => {
             const adoption = await AdoptionModel.findOne({ document: 'DOC1122' }).lean()
             const update = {
                 adoptionDate: "2026-03-22T17:56:16.774Z"
@@ -200,6 +246,31 @@ describe('/api/adoption', () => {
             expect(response.statusCode).toBe(400)
             expect(response.body.status).toBe('error')
             expect(response.body.message).toBe('Is not allowed to modify adoption date')
+        })
+
+        test('Should return 400 error - trying to update adoptions id', async () => {
+            const adoption = await AdoptionModel.findOne({ document: 'DOC1122' }).lean()
+            const update = {
+                _id: "6a32d21a092abeec9705c4be"
+            }
+            const response = await request(app).put(`/api/adoption/${adoption._id}`).send(update)
+
+            expect(response.statusCode).toBe(400)
+            expect(response.body.status).toBe('error')
+            expect(response.body.message).toBe('Is not allowed to modify adoption id')
+        })
+
+        test('Should return 500 when database fails', async () => {
+            jest.spyOn(AdoptionDAO.prototype, 'modifyAdoption').mockRejectedValue(new Error('Database connection failed'))
+            const adoption = await AdoptionModel.findOne({ document: 'DOC1122' }).lean()
+            const update = {
+                petName: "Rec"
+            }
+            const response = await request(app).put(`/api/adoption/${adoption._id}`).send(update)
+            
+            expect(response.statusCode).toBe(500)
+            expect(response.body.status).toBe('error')
+            expect(response.body.message).toBe('Database connection failed')
         })
 
     })
@@ -226,6 +297,80 @@ describe('/api/adoption', () => {
             expect(response.body.message).toBe('Adoption does not exist')
         })
 
+        test('Should return 500 when database fails', async () => {
+            jest.spyOn(AdoptionDAO.prototype, 'deleteAdoption').mockRejectedValue(new Error('Database connection failed'))
+            const adoption = await AdoptionModel.findOne({ document: 'DOC1122' }).lean()
+            const response = await request(app).delete(`/api/adoption/${adoption._id}`)
+            
+            expect(response.statusCode).toBe(500)
+            expect(response.body.status).toBe('error')
+            expect(response.body.message).toBe('Database connection failed')
+        })
+
+    })
+
+})
+
+describe('validateAdoption', () => {
+    const service = new AdoptionService({})
+
+    test('Should return true when adoption data is valid', () => {
+        const adoption = {
+            document: 'DOC3375',
+            completeName: 'Juan Perez',
+            address: '18 de Julio 1234',
+            email: 'juan@gmail.com',
+            age: 30,
+            petType: 'dog',
+            petPatent: 'DOG123',
+            petName: 'Rocky',
+            petAge: 5
+        }
+        expect(service.validateAdoption(adoption)).toBe(true)
+    })
+
+    test('Should return false when adoption data is missing one required value', () => {
+        const adoption = {
+            document: 'DOC3375',
+            address: '18 de Julio 1234',
+            email: 'juan@gmail.com',
+            age: 30,
+            petType: 'dog',
+            petPatent: 'DOG123',
+            petName: 'Rocky',
+            petAge: 5
+        }
+        expect(service.validateAdoption(adoption)).toBe(false)
+    })
+
+    test('Should return false when any adoption data type(string) is incorrect', () => {
+        const adoption = {
+            document: 'DOC3375',
+            completeName: 'Juan Perez',
+            address: 4,
+            email: 'juan@gmail.com',
+            age: 30,
+            petType: 'dog',
+            petPatent: 'DOG123',
+            petName: 'Rocky',
+            petAge: 5
+        }
+        expect(service.validateAdoption(adoption)).toBe(false)
+    })
+
+    test('Should return false when any adoption data type(number) is incorrect', () => {
+        const adoption = {
+            document: 'DOC3375',
+            completeName: 'Juan Perez',
+            address: '18 de Julio 1234',
+            email: 'juan@gmail.com',
+            age: '30',
+            petType: 'dog',
+            petPatent: 'DOG123',
+            petName: 'Rocky',
+            petAge: 5
+        }
+        expect(service.validateAdoption(adoption)).toBe(false)
     })
 
 })

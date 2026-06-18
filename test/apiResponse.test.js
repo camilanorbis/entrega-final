@@ -48,6 +48,17 @@ describe('apiResponse helpers', () => {
         })
     })
 
+    test('successResponse should allow custom status code', () => {
+        const res = createMockResponse()
+        successResponse(res, {
+            statusCode: 201,
+            message: 'Created',
+            payload: {}
+        })
+
+        expect(res.status).toHaveBeenCalledWith(201)
+    })
+
     test('errorResponse should return an error response with status 404 and message', () => {
         const res = createMockResponse()
         errorResponse(res, {
@@ -61,6 +72,26 @@ describe('apiResponse helpers', () => {
             message: 'Adoption does not exist'
         });
 
+    })
+
+    test('errorResponse should return default message when message is not provided', () => {
+        const res = createMockResponse()
+        errorResponse(res, {
+            statusCode: 500
+        })
+
+        expect(res.status).toHaveBeenCalledWith(500)
+        expect(res.json).toHaveBeenCalledWith({
+            status: 'error',
+            message: 'Internal server error'
+        })
+    })
+
+    test('errorResponse should use status code 500 by default', () => {
+        const res = createMockResponse()
+        errorResponse(res, {})
+
+        expect(res.status).toHaveBeenCalledWith(500)
     })
 
 })

@@ -7,5 +7,6 @@ export const connectDB = async(url,dbName) => {
         logger.info({ msg: "Mongoose connected" })
     } catch (error){
         logger.error({ msg: "Unable to connect mongoose" })
+        throw error
     }
 }
