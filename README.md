@@ -274,4 +274,4 @@ test
 
 # Autor
 
-Proyecto desarrollado como entrega final del curso **Backend III**.
+Proyecto desarrollado como entrega final del curso **Backend III** por Camila Norbis.
