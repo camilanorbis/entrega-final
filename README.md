@@ -27,6 +27,16 @@ El proyecto implementa operaciones CRUD completas, documentación automática me
 
 ---
 
+# Url del repositorio
+
+https://github.com/camilanorbis/entrega-final/tree/main
+
+# Url pública de la imagen en DockerHub.
+
+https://hub.docker.com/repository/docker/camilanorbis/adoption-api/tags
+
+---
+
 # Arquitectura
 
 El proyecto implementa una **arquitectura por capas**, donde cada componente posee una responsabilidad específica. Esta organización facilita el mantenimiento, la reutilización del código y la escalabilidad de la aplicación.
@@ -60,18 +70,6 @@ El proyecto implementa una **arquitectura por capas**, donde cada componente pos
 6. La respuesta vuelve siguiendo el mismo recorrido hasta el cliente.
 
 ---
-
-# Url del repositorio
-
-``` text
-https://github.com/camilanorbis/entrega-final/tree/main
-```
-
-# Url pública de la imagen en DockerHub.
-
-``` text
-https://hub.docker.com/repository/docker/camilanorbis/adoption-api/tags
-```
 
 # Estructura del proyecto
 
@@ -133,7 +131,7 @@ PORT=8080
 
 ---
 
-# Ejecutar el proyecto
+# Ejecutar el proyecto localmente
 
 Modo desarrollo
 
@@ -181,6 +179,64 @@ docker run --env-file .env -p 8080:8080 camilanorbis/adoption-api
 ## Ejecución de los tests
 
 La imagen Docker publicada está optimizada para producción y únicamente incluye las dependencias necesarias para ejecutar la aplicación. Por este motivo, los tests deben ejecutarse desde el código fuente del proyecto.
+
+# Tests
+
+El proyecto cuenta con pruebas automatizadas utilizando **Jest** y **Supertest**.
+
+Se validan:
+
+- Operaciones CRUD completas.
+- Casos exitosos.
+- Errores 400.
+- Errores 404.
+- Errores 500.
+- Validaciones de datos.
+- Modelos de respuesta.
+- Conexión a MongoDB.
+- Documentación Swagger.
+
+Ejecutar todos los tests
+
+```bash
+npm test
+```
+
+Ejecutar únicamente los tests de adopciones
+
+```bash
+npm run test test/adoption.test.js
+```
+
+Generar reporte de cobertura
+
+```bash
+npm run test:coverage
+```
+
+## Cobertura
+
+| Métrica | Resultado |
+|----------|----------:|
+| Statements | 100% |
+| Branches | 100% |
+| Functions | 100% |
+| Lines | 100% |
+
+---
+
+## Estructura de pruebas
+
+```text
+test
+│
+├── adoption.test.js
+├── apiResponse.test.js
+├── connectDB.test.js
+└── docs.test.js
+```
+
+---
 
 
 # Documentación Swagger
@@ -252,64 +308,6 @@ Respuesta de error
   "status": "error",
   "message": "Internal server error"
 }
-```
-
----
-
-# Tests
-
-El proyecto cuenta con pruebas automatizadas utilizando **Jest** y **Supertest**.
-
-Se validan:
-
-- Operaciones CRUD completas.
-- Casos exitosos.
-- Errores 400.
-- Errores 404.
-- Errores 500.
-- Validaciones de datos.
-- Modelos de respuesta.
-- Conexión a MongoDB.
-- Documentación Swagger.
-
-Ejecutar todos los tests
-
-```bash
-npm test
-```
-
-Ejecutar únicamente los tests de adopciones
-
-```bash
-npm run test test/adoption.test.js
-```
-
-Generar reporte de cobertura
-
-```bash
-npm run test:coverage
-```
-
-## Cobertura
-
-| Métrica | Resultado |
-|----------|----------:|
-| Statements | 100% |
-| Branches | 100% |
-| Functions | 100% |
-| Lines | 100% |
-
----
-
-# Estructura de pruebas
-
-```text
-test
-│
-├── adoption.test.js
-├── apiResponse.test.js
-├── connectDB.test.js
-└── docs.test.js
 ```
 
 ---
