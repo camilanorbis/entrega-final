@@ -61,6 +61,18 @@ El proyecto implementa una **arquitectura por capas**, donde cada componente pos
 
 ---
 
+# Url del repositorio
+
+``` text
+https://github.com/camilanorbis/entrega-final/tree/main
+```
+
+# Url pública de la imagen en DockerHub.
+
+``` text
+https://hub.docker.com/repository/docker/camilanorbis/adoption-api/tags
+```
+
 # Estructura del proyecto
 
 El proyecto se encuentra organizado de la siguiente forma:
@@ -113,8 +125,10 @@ Crear un archivo `.env` tomando como referencia el archivo `.env.example`.
 Ejemplo:
 
 ```env
+MONGO_URL=mongodb://localhost:27017/
+DB_NAME=adoption_api
+DB_NAME_TEST=adoption_api_test
 PORT=8080
-MONGODB_URI=mongodb://localhost:27017/adoption
 ```
 
 ---
@@ -141,11 +155,39 @@ http://localhost:8080
 
 ---
 
+# Ejecutar el proyecto con imagen docker
+
+1. Descargar la imagen
+
+``` bash
+docker pull camilanorbis/adoption-api:latest
+```
+
+2. Crear un archivo .env con las siguientes variables
+
+``` env
+MONGO_URL=
+DB_NAME=
+DB_NAME_TEST=
+PORT=
+```
+
+3. Ejecutar
+
+``` bash
+docker run --env-file .env -p 8080:8080 camilanorbis/adoption-api
+```
+
+## Ejecución de los tests
+
+La imagen Docker publicada está optimizada para producción y únicamente incluye las dependencias necesarias para ejecutar la aplicación. Por este motivo, los tests deben ejecutarse desde el código fuente del proyecto.
+
+
 # Documentación Swagger
 
 Una vez iniciado el servidor, la documentación interactiva estará disponible en:
 
-```
+``` text
 http://localhost:8080/api/docs
 ```
 
